@@ -1,9 +1,9 @@
 ﻿#include "DataCollect.h"
 
-using namespace cv;
-using namespace std;
 
-Data_Collector::Data_Collector(window_size *pstruct)
+
+
+Data_Collector::Data_Collector(window_size *pstruct) // get the screen size
 {
 	win_hdc = pstruct->hdc;
 	win_hwcdc = pstruct->hwcdc;
@@ -16,12 +16,14 @@ Data_Collector::Data_Collector(window_size *pstruct)
 
 };
 
-Mat Data_Collector::save()
+Mat Data_Collector::Capture(string filename)
 {
-	src.create(win_height, win_width, CV_8UC4);
 
+	src.create(win_height, win_width, CV_8UC4);
+	
 	hbwindow = CreateCompatibleBitmap(win_hdc, win_width, win_height);
 
+	//create a bitmap
 	BMIH.biSize = sizeof(BITMAPINFOHEADER);
 	BMIH.biWidth = win_width;
 	BMIH.biHeight = win_height;
@@ -34,10 +36,20 @@ Mat Data_Collector::save()
 	BMIH.biClrUsed = 0;
 	BMIH.biClrImportant = 0;
 
+	// use the previously created device context with the bitmap
 	SelectObject(win_hwcdc, hbwindow);
+
+	//	copy from the window device context to the bitmap device context
 	StretchBlt(win_hwcdc, 0, 0, win_width, win_height, win_hdc, 0, 0, win_src_width, win_src_height, SRCCOPY);
 	GetDIBits(win_hwcdc, hbwindow, 0, win_height, src.data, (BITMAPINFO *)&BMIH, DIB_RGB_COLORS);
 
+	/* save file
+	stringstream ss;
+	string basePath("C:\\ImgData");
+	string str(filename);
+	
+	ss << basePath << "\\" << str << ".bmp";
+	*/
 	/*
 	DeleteObject(hbwindow);
 	DeleteDC(win_hwcdc);
@@ -47,14 +59,3 @@ Mat Data_Collector::save()
 	return src;
 }
 
-
-// 프로그램 실행: <Ctrl+F5> 또는 [디버그] > [디버깅하지 않고 시작] 메뉴
-// 프로그램 디버그: <F5> 키 또는 [디버그] > [디버깅 시작] 메뉴
-
-// 시작을 위한 팁: 
-//   1. [솔루션 탐색기] 창을 사용하여 파일을 추가/관리합니다.
-//   2. [팀 탐색기] 창을 사용하여 소스 제어에 연결합니다.
-//   3. [출력] 창을 사용하여 빌드 출력 및 기타 메시지를 확인합니다.
-//   4. [오류 목록] 창을 사용하여 오류를 봅니다.
-//   5. [프로젝트] > [새 항목 추가]로 이동하여 새 코드 파일을 만들거나, [프로젝트] > [기존 항목 추가]로 이동하여 기존 코드 파일을 프로젝트에 추가합니다.
-//   6. 나중에 이 프로젝트를 다시 열려면 [파일] > [열기] > [프로젝트]로 이동하고 .sln 파일을 선택합니다

@@ -9,6 +9,9 @@
 #include "msgdef.h"
 #include <Windows.h>
 
+using namespace cv;
+using namespace std;
+
 class Data_Collector
 {
 	private:
@@ -31,6 +34,6 @@ class Data_Collector
 		Data_Collector(window_size *pstruct);
 		~Data_Collector();
 
-		Mat save();
+		Mat Capture(string filename);
 };
 
