@@ -3,27 +3,40 @@
 
 
 
-Data_Collector::Data_Collector(window_size *pstruct) // get the screen size
+Data_Collector::Data_Collector() 
 {
-	win_hdc = pstruct->hdc;
-	win_hwcdc = pstruct->hwcdc;
-
-	win_width = pstruct->width;
-	win_height = pstruct->height;
-
-	win_src_width = pstruct->src_width;
-	win_src_height = pstruct->src_height;
+	Search();
 
 };
+Data_Collector::~Data_Collector() {}
 
-Mat Data_Collector::Capture(string filename)
+// get the screen size
+void Data_Collector::Search()	
 {
+	HWND hwnd = GetDesktopWindow();
 
-	src.create(win_height, win_width, CV_8UC4);
+	win_hdc = GetDC(hwnd);
+	win_hwcdc = CreateCompatibleDC(win_hdc);
+
+	RECT win_size;
+
+	GetClientRect(hwnd, &win_size);
+
+	win_width = win_size.right;
+	win_height = win_size.bottom;
+
+	win_src_width = win_size.right / 1;
+	win_src_height = win_size.bottom / 1;
+}
+
+
+//capture screen
+Mat Data_Collector::Capture()	
+{
+	src.create(win_height, win_width, CV_8UC4);	//@param3 : matrix type(channel)
 	
-	hbwindow = CreateCompatibleBitmap(win_hdc, win_width, win_height);
-
 	//create a bitmap
+	hbwindow = CreateCompatibleBitmap(win_hdc, win_width, win_height);
 	BMIH.biSize = sizeof(BITMAPINFOHEADER);
 	BMIH.biWidth = win_width;
 	BMIH.biHeight = win_height;
@@ -40,22 +53,42 @@ Mat Data_Collector::Capture(string filename)
 	SelectObject(win_hwcdc, hbwindow);
 
 	//	copy from the window device context to the bitmap device context
+
 	StretchBlt(win_hwcdc, 0, 0, win_width, win_height, win_hdc, 0, 0, win_src_width, win_src_height, SRCCOPY);
 	GetDIBits(win_hwcdc, hbwindow, 0, win_height, src.data, (BITMAPINFO *)&BMIH, DIB_RGB_COLORS);
-
-	/* save file
-	stringstream ss;
-	string basePath("C:\\ImgData");
-	string str(filename);
 	
-	ss << basePath << "\\" << str << ".bmp";
-	*/
-	/*
 	DeleteObject(hbwindow);
 	DeleteDC(win_hwcdc);
 	ReleaseDC(win_hwnd);
-	*/
-
+	
 	return src;
 }
 
+//save image
+void Data_Collector::Save(Mat img, string img_name, bool gray)
+{
+	//grayscale
+	if (gray)
+	{
+		Mat gray_img;
+		cvtColor(img, gray_img, CV_BGR2GRAY);
+		imwrite(img_name, gray_img)
+	}
+	else
+	{
+		imwrite(img_name, img)
+	}
+}
+
+//capture agent
+virtual void Data_Collector::run()
+{
+	time_t now = time(0);
+	struct tm tstruct;
+	char buf[80];
+	tstruct = *localtime(&now);
+	strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+	Save(Capture(),buf,TRUE);
+	Sleep(2000);
+}

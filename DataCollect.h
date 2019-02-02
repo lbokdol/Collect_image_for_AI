@@ -8,17 +8,22 @@
 #include <string>
 #include "msgdef.h"
 #include <Windows.h>
+#include "CThread.h"
+#include <time.h>
 
 using namespace cv;
 using namespace std;
 
-class Data_Collector
+class Data_Collector:public CThread
 {
 	private:
 		string filename;
 
+		HWND target_screen;
+
 		int win_width;
 		int win_height;
+
 		int win_src_width;
 		int win_src_height;
 
@@ -31,9 +36,13 @@ class Data_Collector
 		Mat src;
 
 	public:
-		Data_Collector(window_size *pstruct);
+		Data_Collector();
 		~Data_Collector();
 
-		Mat Capture(string filename);
+		void Search();
+		Mat Capture();
+		void Save(Mat img, string img_name, bool gray);
+
+		virtual void run();
 };
 
